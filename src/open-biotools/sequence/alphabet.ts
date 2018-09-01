@@ -45,7 +45,42 @@ export class DnaAlphabet extends Alphabet {
     this.symbols.push('T');
     this.symbols.push('G');
     this.symbols.push('C');
+    this.symbols.push(' ');
   }
 
+}
+
+
+
+
+
+export class ProteinAlphabet extends Alphabet {
+  
+  constructor() {
+    super();
+    this.symbols.push('A');
+    this.symbols.push('C');
+    this.symbols.push('D');
+    this.symbols.push('E');
+    this.symbols.push('F');
+    this.symbols.push('G');
+    this.symbols.push('H');
+    this.symbols.push('I');
+    this.symbols.push('K');
+    this.symbols.push('L');
+    this.symbols.push('M');
+    this.symbols.push('N');
+    this.symbols.push('P');
+    this.symbols.push('Q');
+    this.symbols.push('R');
+    this.symbols.push('S');
+    this.symbols.push('T');
+    this.symbols.push('V');
+    this.symbols.push('W');
+    this.symbols.push('Y');
+    this.symbols.push(' ');
+  }
 
 }
+
+
