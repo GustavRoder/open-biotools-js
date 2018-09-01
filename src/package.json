@@ -1,0 +1,25 @@
+{
+  "name": "open-biotools-js",
+  "version": "0.0.1",
+  "description": "Open Biotools JS",
+  "main": "",
+  "scripts": {
+    "test": "mocha -r ts-node/register tests/tests.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GustavRoder/open-biotools-js.git"
+  },
+  "keywords": [
+    "Bio",
+    "Tools",
+    "JS",
+    "Informatics"
+  ],
+  "author": "Gustav Roder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GustavRoder/open-biotools-js/issues"
+  },
+  "homepage": "https://github.com/GustavRoder/open-biotools-js#readme"
+}
