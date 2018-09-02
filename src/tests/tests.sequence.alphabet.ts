@@ -61,7 +61,7 @@ describe('DnaAlpabet', () => {
     });
   });
 
-  describe('validateSequence', () => {
+  describe('validateSequence()', () => {
 
     it('should return false for empty sequences', () => {
       expect(alphabet.validateSequence(null)).to.equal(false);
@@ -116,7 +116,7 @@ describe('ProteinAlpabet', () => {
     });
   });
 
-  describe('validateSequence', () => {
+  describe('validateSequence()', () => {
 
     it('should return false for empty sequences', () => {
       expect(alphabet.validateSequence(null)).to.equal(false);

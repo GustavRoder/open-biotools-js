@@ -4,7 +4,7 @@
   "description": "Open Biotools JS",
   "main": "",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/tests.ts"
+    "test": "mocha -r ts-node/register tests/tests.*.ts"
   },
   "repository": {
     "type": "git",
