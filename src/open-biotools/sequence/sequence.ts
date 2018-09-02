@@ -4,6 +4,8 @@ export interface ISequence {
 
   alphabet: IAlphabet;
 
+  name: string;
+
   sequence: string; 
 
   setSequence(sequence: string);
@@ -16,6 +18,8 @@ export interface ISequence {
 export class Sequence implements ISequence {
 
   alphabet: IAlphabet;
+
+  name: string;
 
   sequence: string;
 
