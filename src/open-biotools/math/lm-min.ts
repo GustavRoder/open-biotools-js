@@ -1,55 +1,13 @@
-class LmMin {
+export class LmMin {
+
+  readonly LM_MACHEP: number = 1.2e-16;
+  readonly LM_DWARF: number = 1.0e-38;
+  readonly LM_SQRT_DWARF: number = 3.834e-20;
+  readonly LM_SQRT_GIANT: number = 1.304e19;
+  readonly LM_USER_TOL: number = 1.e-14;
 
   constructor() {
-    //Defaults    
-    this.LM_MACHEP = 1.2e-16;
-    this.LM_DWARF = 1.0e-38;
-    this.LM_SQRT_DWARF = 3.834e-20;
-    this.LM_SQRT_GIANT = 1.304e19;
-    this.LM_USER_TOL = 1.e-14;
 
-    let control = {
-      epsilon: this.LM_MACHEP,
-      ftol: .001,
-      gtol: .001,
-      n_maxpri: -1,
-      patience: 1000,
-      scale_diag: 0,
-      stepbound: 1,
-      verbosity: false,
-      xtol: .001
-    };    
-    let status = {
-      nfev: 0,
-      outcome: 0
-    };
-
-    //y = a*x + b
-    //let t = [1, 2, 3];
-    //let y = [8, 13, 18]; //a = 5, b = 3
-    //let par = [1, 1];
-    //let fCalc = (t, par) => par[0] * t + par[1];
-
-    //y = K / (1 + exp(-r * (t - t0))), K = 5.0949, r = 0.1213, t0 = 45.7748
-    let t = [11, 15, 18, 23, 26, 31, 39, 44, 54, 64, 74];
-    let y = [0.00476, 0.0105, 0.0207, 0.0619, 0.337, 0.74, 1.7, 2.45, 3.5, 4.5, 5.09];
-    let par = [1, 1, 37]; //0: K, 1: r, 2: t0
-    let fCalc = (t, par) => par[0] / (1 + Math.exp(-par[1] * (t - par[2])));
-
-    //Generics
-    let data = { t: t, y: y };
-    let fEval = (par, m_dat, data, fvec) => {
-      for (let i = 0; i < m_dat; i++) {
-        let t = data.t[i], y = data.y[i];
-        fvec[i] = y - fCalc(t, par);
-      }
-    };
-    
-
-    this.lmmin(par.length, par, data.t.length, data, fEval, control, status);
-
-    console.log(par);
-    console.log(status);
   }
 
 
@@ -653,7 +611,7 @@ lm_lmpar(n, r, ldr, ipvt, diag, qtb, delta, par, x, sdiag, aux, xdi) {
         }
         rdiag[kmax] = rdiag[j];
         wa[kmax] = wa[j];
-        k = ipvt[j];
+        let k = ipvt[j];
         ipvt[j] = ipvt[kmax];
         ipvt[kmax] = k;
       }
