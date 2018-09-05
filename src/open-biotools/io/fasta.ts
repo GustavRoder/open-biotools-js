@@ -1,10 +1,20 @@
 import { Sequence } from "../sequence/sequence";
 import { ProteinAlphabet, IAlphabet } from "../sequence/alphabet";
 
+
+/**
+ * @description Parses FASTA format
+ */
 export class Fasta {
 
   sequences: Sequence[];
 
+
+  /**
+   * @description Parse FASTA formatted content
+   * @param {string} text FASTA formatted content
+   * @param {IAlphabet} alphabet The alphabet used to sequence validate
+   */
   parse(text: string, alphabet?: IAlphabet) {
     this.sequences = [];
     if (!text) throw new Error('No text input');
@@ -28,6 +38,11 @@ export class Fasta {
     }
   }
 
+
+  /**
+   * @description Prints the containing sequences to FASTA format
+   * @param {number} width The width of the print as single sequence characters
+   */
   print(width: number = 75): string {
     let out = '';
     for (let entry of this.sequences) {
