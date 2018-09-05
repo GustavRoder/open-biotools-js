@@ -1,115 +1,131 @@
 import { AlignedSequence } from './aligned-sequence';
 import { ISequence } from '../sequence/sequence';
 
-/// <summary>
-/// PairwiseAlignedSequence is a class containing the single aligned unit of pairwise alignment.
-/// </summary>
+
+
+/**
+ * @description PairwiseAlignedSequence is a class containing the single aligned unit of pairwise alignment.
+ */
 export class PairwiseAlignedSequence extends AlignedSequence {
-  /// <summary>
-  /// Constant string indicating consensus in meta-data.
-  /// </summary>
+
+  /**
+   * @description Constant string indicating consensus in meta-data.
+   */
   private readonly consensusKey: string = 'Consensus';
 
-  /// <summary>
-  /// Constant string indicating alignment score in meta-data.
-  /// </summary>
+  /**
+   * @description Constant string indicating alignment score in meta-data.
+   */
   private readonly scoreKey: string = 'Score';
 
-  /// <summary>
-  /// Constant string indicating offset of first sequence in alignment.
-  /// </summary>
+  /**
+   * @description Constant string indicating offset of first sequence in alignment.
+   */
   private readonly firstOffsetKey: string = 'FirstOffset';
 
-  /// <summary>
-  /// Constant string indicating offset of second sequence in alignment.
-  /// </summary>
+  /**
+   * @description Constant string indicating offset of second sequence in alignment.
+   */
   private readonly secondOffsetKey: string = 'SecondOffset';
 
 
-  /// <summary>
-  /// Initializes a new instance of the PairwiseAlignedSequence class.
-  /// </summary>
   constructor() {
     super();
   }
 
 
-  /// <summary>
-  /// Gets or sets Alignment of First Sequence.
-  /// </summary>
+  /**
+   * @description Gets the Alignment of First Sequence.
+   */
   public get firstSequence(): ISequence {
     return this.sequences.length > 0 ? this.sequences[0] : null;
   }
 
+  /**
+   * @description Sets the Alignment of First Sequence.
+   */
   public set firstSequence(seq: ISequence) {
     if (this.sequences.length === 0) this.sequences.push(null);
     this.sequences[0] = seq;
   }
 
-  /// <summary>
-  /// Gets or sets Alignment of Second Sequence.
-  /// </summary>
+  /**
+   * @description Gets the Alignment of Second Sequence.
+   */
   public get secondSequence(): ISequence {
     return this.sequences.length > 1 ? this.sequences[1] : null;
   }
 
+  /**
+   * @description Sets the Alignment of Second Sequence.
+   */
   public set secondSequence(seq: ISequence) {
     if (this.sequences.length === 0) this.sequences.push(null);
     if (this.sequences.length === 1) this.sequences.push(null);
     this.sequences[1] = seq;
   }
 
-  /// <summary>
-  /// Gets or sets Consensus of FirstSequence and SecondSequence.
-  /// </summary>
+  /**
+   * @description Gets the Consensus of FirstSequence and SecondSequence.
+   */
   public get consensus(): ISequence {
     return this.metadata[this.consensusKey];
   }
 
+  /**
+   * @description Sets the Consensus of FirstSequence and SecondSequence.
+   */
   public set consensus(seqCons: ISequence) {
     this.metadata[this.consensusKey] = seqCons;
   }
 
-  /// <summary>
-  /// Gets or sets Score of the alignment.
-  /// </summary>
+  /**
+   * @description Gets the Score of the alignment.
+   */
   public get score(): number {
     return this.metadata[this.scoreKey] ? this.metadata[this.scoreKey] : 0;
   }
 
+  /**
+   * @description Sets the Score of the alignment.
+   */
   public set score(value: number) {
     this.metadata[this.scoreKey] = value;
   }
 
-
-  /// <summary>
-  /// Gets or sets Offset of FirstSequence.
-  /// </summary>
+  /**
+   * @description Gets the Offset of FirstSequence.
+   */
   public get firstOffset(): number {
     return this.metadata[this.firstOffsetKey] ? this.metadata[this.firstOffsetKey] : 0;
   }
 
+  /**
+   * @description Sets the Offset of FirstSequence.
+   */
   public set firstOffset(value: number) {
     this.metadata[this.firstOffsetKey] = value;
   }
 
-
-  /// <summary>
-  /// Gets or sets Offset of SecondSequence.
-  /// </summary>
+  /**
+   * @description Gets the Offset of SecondSequence.
+   */
   public get secondOffset(): number {
     return this.metadata[this.secondOffsetKey] ? this.metadata[this.secondOffsetKey] : 0;
   }
 
+  /**
+   * @description Sets the Offset of SecondSequence.
+   */
   public set secondOffset(value: number) {
     this.metadata[this.secondOffsetKey] = value;
   }
 
 
-  /// <summary>
-  /// Converts the Consensus, First and Second sequences.
-  /// </summary>
-  /// <returns>Consensus, First and Second sequences.</returns>
+  /**
+   * @description Converts the Consensus, First and Second sequences.
+   * @returns Consensus, First and Second sequences.
+   */
   public toString(): string {
     let str = '';
     str += this.consensus.sequence + '\n';
@@ -117,5 +133,6 @@ export class PairwiseAlignedSequence extends AlignedSequence {
     str += this.secondSequence.sequence + '\n';
     return str;
   }
+
 
 }

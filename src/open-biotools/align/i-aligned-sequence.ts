@@ -1,16 +1,20 @@
-import { ISequence } from "../sequence/sequence";
+import { ISequence } from '../sequence/sequence';
 
-/// <summary>
-/// Interface to hold single aligned unit of alignment.
-/// </summary>
+
+
+/**
+ * @description Interface to hold single aligned unit of alignment.
+ */
 export interface IAlignedSequence {
-  /// <summary>
-  /// Gets information about the AlignedSequence, like score, offsets, consensus, etc..
-  /// </summary>
+
+  /**
+   * @description Gets information about the AlignedSequence, like score, offsets, consensus, etc..
+   */
   metadata: object;
 
-  /// <summary>
-  /// Gets list of sequences, aligned as part of an alignment.
-  /// </summary>
+  /**
+   * @description Gets list of sequences, aligned as part of an alignment.
+   */
   sequences: ISequence[];
+
 }

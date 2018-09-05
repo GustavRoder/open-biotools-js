@@ -23,8 +23,9 @@ export class Sequence implements ISequence {
 
   sequence: string;
 
-  constructor(alphabet: IAlphabet) {
+  constructor(alphabet: IAlphabet, sequence?: string) {
     this.alphabet = alphabet;
+    if (sequence) this.setSequence(sequence);
   }
 
   setSequence(sequence: string) {
