@@ -4,10 +4,12 @@ import { SimilarityMatrix } from './similarity-matrix';
 import { IConsensusResolver } from './i-consensus-resolver';
 import { DiagonalSimilarityMatrix } from './diagonal-similarity-matrix';
 import { IAlphabet } from '../sequence/alphabet';
+import { Alphabets } from '../sequence/alphabets';
 import { PairwiseSequenceAlignment } from './pairwise-sequence-alignment';
 import { PairwiseAlignedSequence } from './pairwise-aligned-sequence';
 import { SourceDirection } from './source-direction';
 import { ISequenceAligner } from './i-sequence-aligner';
+import { SimpleConsensusResolver } from './simple-consensus-resolver';
 
 
 
@@ -182,6 +184,8 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
     this.gapOpenCost = -8;
     this.gapExtensionCost = -1;
     this.includeScoreTable = false;
+
+    Alphabets.initialize();
   }
 
   /// <summary>
@@ -282,46 +286,33 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
   /// <returns></returns>
   doAlign(sequence1: ISequence, sequence2: ISequence, useAffineGapModel: boolean): IPairwiseSequenceAlignment[] {
     this.usingAffineGapModel = useAffineGapModel;
-    if (!sequence1) throw new Error('sequence1');
-    if (!sequence2) throw new Error('sequence2');
+    if (!sequence1) throw new Error('Sequence1 not defined');
+    if (!sequence2) throw new Error('Sequence2 not defined');
 
-    // if (!Alphabets.CheckIsFromSameBase(sequence1.Alphabet, sequence2.Alphabet)) {
-    //   Trace.Report(Properties.Resource.InputAlphabetsMismatch);
-    //   throw new ArgumentException(Properties.Resource.InputAlphabetsMismatch);
-    // }
+    if (!Alphabets.checkIsFromSameBase(sequence1.alphabet, sequence2.alphabet)) throw new Error('Sequences are not from the same alphabet base');
 
-    if (!this.similarityMatrix) throw new Error('similarityMatrix is null');
+    if (!this.similarityMatrix) throw new Error('SimilarityMatrix not defined');
 
     if (!this.similarityMatrix.validateSequence(sequence1)) throw new Error('Could not validate sequence1');
-    if (!this.similarityMatrix.validateSequence(sequence2)) throw new Error('Could not validate sequence1');
+    if (!this.similarityMatrix.validateSequence(sequence2)) throw new Error('Could not validate sequence2');
 
     if (this.gapOpenCost > this.gapExtensionCost) throw new Error('GapOpen is greater than GapExtension');
 
     this._sequence1 = sequence1;
     this._sequence2 = sequence2;
-    //this._gap = Alphabets.CheckIsFromSameBase(Alphabets.Protein, sequence1.Alphabet) ? Alphabets.Protein.Gap : Alphabets.DNA.Gap;
+    this._gap = Alphabets.checkIsFromSameBase(Alphabets.protein, sequence1.alphabet) ? Alphabets.protein.gap : Alphabets.DNA.gap;
 
-    this.referenceSequence = this.getByteArrayFromSequence(this._sequence1);
-    this.querySequence = this.getByteArrayFromSequence(this._sequence2);
+    this.referenceSequence = this._sequence1.symbols;
+    this.querySequence = this._sequence2.symbols;
 
     // Assign consensus resolver if it was not assigned already.
     let alphabet: IAlphabet = sequence1.alphabet;
     if (!this.consensusResolver)
-      this.consensusResolver = new SimpleConsensusResolver(alphabet.hasAmbiguity ? alphabet : Alphabets.AmbiguousAlphabetMap[sequence1.Alphabet]);
+      this.consensusResolver = new SimpleConsensusResolver(alphabet.hasAmbiguity ? alphabet : Alphabets.ambiguousAlphabetMap[sequence1.alphabet.name]);
     else
-      this.consensusResolver.sequenceAlphabet = alphabet.HasAmbiguity ? alphabet : Alphabets.AmbiguousAlphabetMap[sequence1.Alphabet];
+      this.consensusResolver.sequenceAlphabet = alphabet.hasAmbiguity ? alphabet : Alphabets.ambiguousAlphabetMap[sequence1.alphabet.name];
 
-    //return new List < IPairwiseSequenceAlignment > { Process() };
-    return null;
-  }
-
-  /// <summary>
-  /// Retrieve or copy the sequence array
-  /// </summary>
-  /// <param name="sequence"></param>
-  /// <returns></returns>
-  getByteArrayFromSequence(sequence: ISequence): string[] {
-    return [ ...sequence.sequence ];
+    return [this.Process()];
   }
 
   /// <summary>
@@ -337,7 +328,7 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
     this.initialize();
 
     // Step 2: Matrix fill (scoring)
-    var scores = this.createTracebackTable();
+    let scores = this.createTracebackTable();
 
     // Step 3: Traceback (alignment)
     return this.createAlignment(scores);
@@ -355,7 +346,7 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
     // Track rows/cols
     this.rows = this.querySequence.length + 1;
     this.cols = this.referenceSequence.length + 1;
-
+    
     // Attempt to keep the scoring table if requested. For performance/memory we use a single
     // array here, but it limits the size dramatically so see if we can actually hold it.
     if (this.includeScoreTable || this.usingAffineGapModel) {
@@ -370,8 +361,10 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
     }
 
     // Allocate the first pass of the traceback
-    //this.traceback = [this.][];
-    //this.traceback[0] = new sbyte[Cols]; // Initialized to STOP
+    this.traceback = new Array<number[]>(this.rows);
+    this.traceback[0] = new Array<number>(this.cols);
+    for (let i = 0; i < this.cols; i++)
+      this.traceback[0][i] = 0;
   }
 
   /// <summary>
@@ -410,10 +403,10 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
   createAlignmentFromCell(startingCell: OptScoreMatrixCell): PairwiseAlignedSequence {
     let gapStride: number = this.cols + 1;
     //Using list to avoid allocation issues
-    let estimatedLength = (1.1 * Math.max(this.referenceSequence.length, this.querySequence.length));
+    let estimatedLength = Math.round((1.1 * Math.max(this.referenceSequence.length, this.querySequence.length)));
     let firstAlignment: string[] = new Array<string>(estimatedLength);
     let secondAlignment: string[] = new Array<string>(estimatedLength);
-
+    console.log(startingCell)
     // Get the starting cell position and record the optimal score found there.
     let i: number = startingCell.row;
     let j: number = startingCell.col;
@@ -421,7 +414,8 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
 
     let rowGaps: number = 0, colGaps: number = 0, identicalCount: number = 0, similarityCount: number = 0;
 
-    // Walk the traceback matrix and build the alignments.
+    // Walk the traceback matrix and build the alignments
+    console.log(this.traceback);console.log(startingCell)
     while (!this.tracebackIsComplete(i, j)) {
       let tracebackDirection: number = this.traceback[i][j];
       // Walk backwards through the trace back
@@ -432,14 +426,16 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
           let n2 = this.querySequence[i - 1];
           firstAlignment.push(n1);
           secondAlignment.push(n2);
+          console.log('before: ' + i);
           i--;
+          console.log('after: ' + i);
           j--;
           // Track some useful statistics
-          if (n1 == n2 && n1 != this._gap) {
+          if (n1 === n2 && n1 !== this._gap) {
             identicalCount++;
             similarityCount++;
           }
-          else if (this.similarityMatrix[n2, n1] > 0)
+          else if (this.similarityMatrix.data[n2][n1] > 0)
             similarityCount++;
           break;
         case SourceDirection.left:
@@ -483,7 +479,7 @@ export class PairwiseSequenceAligner implements IPairwiseSequenceAligner {
     // both underlying arrays.
     firstAlignment.reverse();
     secondAlignment.reverse();
-    // Create the Consensus sequence
+    // Create the consensus sequence
     let consensus = new Array<string>(Math.min(firstAlignment.length, secondAlignment.length));
     for (let n = 0; n < consensus.length; n++) {
       consensus[n] = this.consensusResolver.getConsensus([firstAlignment[n], secondAlignment[n]]);

@@ -1,4 +1,5 @@
 import { SimilarityMatrix, StandardSimilarityMatrix } from './similarity-matrix';
+import { Sequence } from '../sequence/sequence';
 
 
 
@@ -8,7 +9,7 @@ import { SimilarityMatrix, StandardSimilarityMatrix } from './similarity-matrix'
  * returning the diagonal value if true, and the off diagonal value if false.
  */
 export class DiagonalSimilarityMatrix extends SimilarityMatrix {
-  
+
   /**
    * @description Score value at diagonals. To be used when (col == row).
    */
@@ -35,12 +36,15 @@ export class DiagonalSimilarityMatrix extends SimilarityMatrix {
     this.name = 'Diagonal: match value ' + this.diagonalValue + ', non-match value ' + this.offDiagonalValue;
 
     // Set allowed symbols
-    const symbols: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ*-abcdefghijklmnopqrstuvwxyz';
-    for (let symbol of symbols) {
-      throw new Error('Not understood'); //Set<...>  
-      //this.supportedAlphabets.push(symbol);
-    }
+    let str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ*-abcdefghijklmnopqrstuvwxyz';
+    let symbols = Sequence.getSymbolsFromSequence(str);
+    for (let symbol of symbols)
+      this.supportedAlphabets.push(symbol);
   }
 
+
+  getValue(row: number, col: number): number {
+    return col === row ? this.diagonalValue : this.offDiagonalValue;
+  }
 
 }

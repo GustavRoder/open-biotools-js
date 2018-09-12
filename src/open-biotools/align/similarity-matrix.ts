@@ -1,5 +1,5 @@
 import { ISequence } from '../sequence/sequence';
-import { IAlphabet, ProteinAlphabet, DnaAlphabet } from '../sequence/alphabet';
+import { DataMatrix, DataMatrix_BLOSUM45, DataMatrix_BLOSUM50, DataMatrix_BLOSUM62, DataMatrix_BLOSUM80, DataMatrix_BLOSUM90, DataMatrix_PAM250, DataMatrix_PAM30, DataMatrix_PAM70, DataMatrix_AmbigiousDNA, DataMatrix_AmbigiousRNA, DataMatrix_DiagonalScore, DataMatrix_EDNAFull } from './data-matrices';
 
 
 
@@ -90,16 +90,22 @@ export enum StandardSimilarityMatrix {
 /// pair of symbols in an alphabet. BLOSUM and PAM are well-known examples.
 /// </summary>
 export class SimilarityMatrix {
+
   /// <summary>
   /// Array containing the scores for each pair of symbols.
   /// The indices of the array are byte values of alphabet symbols.
   /// </summary>
-  private similarityMatrix: number[][];
+  data: number[][];
 
-  /// <summary>
-  /// 
+  supportedAlphabets: string[];
+
+  /// <summary> 
+  /// Gets or sets descriptive name of the particular SimilarityMatrix being used. 
   /// </summary>
-  supportedAlphabets: IAlphabet[];
+  name: string;
+
+
+  dataMatrix: DataMatrix;
 
 
   /// <summary>
@@ -112,262 +118,42 @@ export class SimilarityMatrix {
   /// </param>
   constructor(matrixId: StandardSimilarityMatrix) {
     // MoleculeType.Protein for BLOSUM and PAM series supported matrices
-    let moleculeType: IAlphabet = new ProteinAlphabet();
-    let matrixText: string = null;
+    this.dataMatrix = null;
 
     switch (matrixId) {
-      case StandardSimilarityMatrix.Blosum45:
-        matrixText = 'Bio.SimilarityMatrices.Resources.BLOSUM45.txt';
-        break;
-      case StandardSimilarityMatrix.Blosum50:
-        matrixText = 'Bio.SimilarityMatrices.Resources.BLOSUM50.txt';
-        break;
-      case StandardSimilarityMatrix.Blosum62:
-        matrixText = 'Bio.SimilarityMatrices.Resources.BLOSUM62.txt';
-        break;
-      case StandardSimilarityMatrix.Blosum80:
-        matrixText = 'Bio.SimilarityMatrices.Resources.BLOSUM80.txt';
-        break;
-      case StandardSimilarityMatrix.Blosum90:
-        matrixText = 'Bio.SimilarityMatrices.Resources.BLOSUM90.txt';
-        break;
-      case StandardSimilarityMatrix.Pam250:
-        matrixText = 'Bio.SimilarityMatrices.Resources.PAM250.txt';
-        break;
-      case StandardSimilarityMatrix.Pam30:
-        matrixText = 'Bio.SimilarityMatrices.Resources.PAM30.txt';
-        break;
-      case StandardSimilarityMatrix.Pam70:
-        matrixText = 'Bio.SimilarityMatrices.Resources.PAM70.txt';
-        break;
-      case StandardSimilarityMatrix.AmbiguousDna:
-        matrixText = 'Bio.SimilarityMatrices.Resources.AmbiguousDNA.txt';
-        moleculeType = new DnaAlphabet();
-        break;
-      case StandardSimilarityMatrix.AmbiguousRna:
-        matrixText = 'Bio.SimilarityMatrices.Resources.AmbiguousRNA.txt';
-        throw new Error('There is not RnaAlphabet!');
-        //moleculeType = Alphabets.RNA;
-        break;
-      case StandardSimilarityMatrix.DiagonalScoreMatrix:
-        matrixText = 'Bio.SimilarityMatrices.Resources.DiagonalScoreMatrix.txt';
-        break;
-      case StandardSimilarityMatrix.EDnaFull:
-        matrixText = 'Bio.SimilarityMatrices.Resources.EDNAFull.txt';
-        throw new Error('There is not ambiguousDna Alphabet');
-        //moleculeType = Alphabets.AmbiguousDNA;
-        break;
+      case StandardSimilarityMatrix.Blosum45: this.dataMatrix = new DataMatrix_BLOSUM45(); break;
+      case StandardSimilarityMatrix.Blosum50: this.dataMatrix = new DataMatrix_BLOSUM50(); break;
+      case StandardSimilarityMatrix.Blosum62: this.dataMatrix = new DataMatrix_BLOSUM62(); break;
+      case StandardSimilarityMatrix.Blosum80: this.dataMatrix = new DataMatrix_BLOSUM80(); break;
+      case StandardSimilarityMatrix.Blosum90: this.dataMatrix = new DataMatrix_BLOSUM90(); break;
+      case StandardSimilarityMatrix.Pam250: this.dataMatrix = new DataMatrix_PAM250(); break;
+      case StandardSimilarityMatrix.Pam30: this.dataMatrix = new DataMatrix_PAM30(); break;
+      case StandardSimilarityMatrix.Pam70: this.dataMatrix = new DataMatrix_PAM70(); break;
+      case StandardSimilarityMatrix.DiagonalScoreMatrix: this.dataMatrix = new DataMatrix_DiagonalScore(); break;
+      case StandardSimilarityMatrix.AmbiguousDna: this.dataMatrix = new DataMatrix_AmbigiousDNA(); break;
+      case StandardSimilarityMatrix.AmbiguousRna: this.dataMatrix = new DataMatrix_AmbigiousRNA(); break;
+      case StandardSimilarityMatrix.EDnaFull: this.dataMatrix = new DataMatrix_EDNAFull(); break;
     }
 
-    // Stream stream = typeof(SimilarityMatrix).GetTypeInfo().Assembly.GetManifestResourceStream(matrixText);
-    // if (stream == null)
-    //     throw new Exception('Could not locate SimilarityMatrix ' + matrixText + ' in resources.');
+    this.supportedAlphabets = this.dataMatrix.letters;
 
-    // using (TextReader reader = new StreamReader(stream))
-    // {
-    //     LoadFromStream(reader, moleculeType);
-    // }
+    this.data = this.dataMatrix.values;    
   }
 
-  /// <remarks>
-  /// File or stream format:
-  /// There are two slightly different formats.
-  /// <para>
-  /// For custom similarity matrices:
-  /// First line is descriptive name, will be stored as a string.
-  /// Second line define the molecule type.  Must be 'DNA', 'RNA', or 'Protein'.
-  /// Third line is alphabet (symbol map). It contains n characters and optional white space.
-  /// Following lines are values for each row of matrix
-  /// Must be n numbers per line, n lines
-  /// </para>
-  /// <para>
-  /// In some cases the molecule type is implicit in the matrix.  This is true for the
-  /// supported standard matrices (BLOSUM and PAM series at this point), and for the standard
-  /// encodings IUPACna, NCBIA2na, NCBI2na, NCBI4na, and NCBIeaa.
-  /// For these cases:
-  /// First line is descriptive name, will be stored as a string.
-  /// Second line is the encoding name for the standard encodings (IUPACna, NCBIA2na, NCBI2na, NCBI4na, or NCBIeaa)
-  ///     or the alphabet (symbol map) for the standard matrices.
-  /// Following lines are values for each row of matrix
-  /// Must be n numbers per line, n lines; or in the case of the supported encoding, sufficient
-  /// entries to handle all possible indices (0 through max index value).
-  /// </para>
-  /// </remarks>
-  /// <summary>
-  /// Initializes a new instance of the SimilarityMatrix class.
-  /// Constructs SimilarityMatrix from an input stream.
-  /// </summary>
-  /// <param name='reader'>Text reader associated with the input sequence stream.</param>
-
-  // public SimilarityMatrix(TextReader reader)
-  // {
-  //     LoadFromStream(reader, null);
-  // }
 
 
 
-
-
-  /// <summary> 
-  /// Gets or sets descriptive name of the particular SimilarityMatrix being used. 
-  /// </summary>
-  name: string;
 
   /// <summary>
   /// Gets or sets similarity matrix values in a 2-D integer array.
   /// </summary>
   public get matrix(): number[][] {
-    return this.similarityMatrix;
+    return this.data;
   }
   public set matrix(value: number[][]) {
-    this.similarityMatrix = value;
+    this.data = value;
   }
 
-  /// <summary>
-  /// Returns value of matrix at [row, col].
-  /// </summary>
-  /// <param name='row'>
-  /// Row number. This is same as byte value
-  /// corresponding to sequence symbol on the row.
-  /// </param>
-  /// <param name='col'>
-  /// Column number. This is same as byte value
-  /// corresponding to sequence symbol on the column.
-  /// </param>
-  /// <returns>Score value of matrix at [row, col].</returns>
-
-  // public virtual int this[int row, int col]
-  // {
-  //     get
-  //     {
-  //         return similarityMatrix[row][col];
-  //     }
-  // }
-
-  /// <summary>
-  /// Reads similarity matrix from a stream.  File (or stream) format defined
-  /// above with constructors to create SimilarityMatrix from stream or file.
-  /// </summary>
-  /// <param name='reader'>Text reader associated with the input sequence stream.</param>
-  /// <param name='moleculeType'>Molecule type supported by SimilarityMatrix.</param>
-
-  // private void LoadFromStream(TextReader reader, IAlphabet moleculeType)
-  // {
-  //     char[] delimiters = { '\t', ' ', ',' }; // basic white space, comma, can add more items later if necessary.
-
-  //     Name = reader.ReadLine();
-  //     if (String.IsNullOrEmpty(Name))
-  //     {
-  //         string message = Properties.Resource.SimilarityMatrix_NameMissing;
-  //         Debug.WriteLine(message);
-  //         throw new InvalidDataException(message);
-  //     }
-
-  //     string line = reader.ReadLine();
-  //     if (String.IsNullOrEmpty(line))
-  //     {
-  //         string message = Properties.Resource.SimilarityMatrix_SecondLineMissing;
-  //         Debug.WriteLine(message);
-  //         throw new InvalidDataException(message);
-  //     }
-
-  //     // If the second line is Protein, DNA or RNA, we can set molecule type here and will have to read the alphabet from the third line.
-  //     string secondLine = line.ToUpper().Trim();
-  //     string alphabetLine;
-
-  //     if (moleculeType != null)
-  //     {
-  //         alphabetLine = secondLine;
-  //     }
-  //     else
-  //     {
-  //         // Find molecule type from second line
-  //         if (!(secondLine == 'DNA' || secondLine == 'RNA' || secondLine == 'PROTEIN'))
-  //         {
-  //             string message = String.Format(
-  //                     CultureInfo.CurrentCulture,
-  //                     Properties.Resource.SimilarityMatrix_InvalidMoleculeType,
-  //                     secondLine);
-  //             Debug.WriteLine(message);
-  //             throw new InvalidDataException(message);
-  //         }
-
-  //         // Third line will be the alphabet...
-  //         alphabetLine = reader.ReadLine().ToUpper().Trim();
-  //     }
-
-  //     // We have read the two or three line header, including the alphabet if required.
-  //     int symbolCount = 0;  // Number of symbols in alphabet map.
-
-  //     // We need to parse the alphabet line.
-  //     string[] alphabetsParsed = alphabetLine.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
-  //     byte[] uppercaseByteValues = new byte[alphabetsParsed.Length];
-  //     byte[] lowercaseByteValues = new byte[alphabetsParsed.Length];
-  //     foreach (string s in alphabetsParsed)
-  //     {
-  //         uppercaseByteValues[symbolCount] = (byte)s[0];
-  //         lowercaseByteValues[symbolCount] = (byte)s.ToLowerInvariant()[0];
-  //         supportedAlphabets.Add((byte)s[0]);
-  //         supportedAlphabets.Add((byte)s.ToLowerInvariant()[0]);
-  //         symbolCount++;
-  //     }
-
-  //     // Matrix size is kept as [byte.MaxValue,byte.MaxValue] and avoiding any possible optimizations
-  //     // for the sake of performance.
-  //     int rowCount = byte.MaxValue;
-  //     int columnCount = byte.MaxValue;
-
-  //     int[][] localSimilarityMatrix = new int[rowCount][];
-  //     for (int x = 0; x < rowCount; x++)
-  //     {
-  //         localSimilarityMatrix[x] = new int[columnCount];
-  //     }
-
-  //     int row; // row indices.
-  //     for (row = 0; row < symbolCount; row++)
-  //     {
-  //         line = reader.ReadLine();
-  //         if (line == null || string.IsNullOrWhiteSpace(line))
-  //         {
-  //             string message = Properties.Resource.SimilarityMatrix_FewerMatrixLines;
-  //             Debug.WriteLine(message);
-  //             throw new InvalidDataException(message);
-  //         }
-
-  //         string[] rowValues = line.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
-  //         int col; // column indices.
-  //         for (col = 0; col < symbolCount; col++)
-  //         {
-  //             try
-  //             {
-  //                 // Store scores at two locations
-  //                 // One at the byte value of the uppercase alphabet
-  //                 // Another at the byte value of the lowercase representation of the same alphabet
-  //                 // This data duplication is for getting performance in further SM lookups.
-  //                 localSimilarityMatrix[uppercaseByteValues[row]][uppercaseByteValues[col]] = Convert.ToInt32(rowValues[col], CultureInfo.InvariantCulture);
-  //                 localSimilarityMatrix[lowercaseByteValues[row]][lowercaseByteValues[col]] = Convert.ToInt32(rowValues[col], CultureInfo.InvariantCulture);
-
-  //                 localSimilarityMatrix[uppercaseByteValues[row]][lowercaseByteValues[col]] = Convert.ToInt32(rowValues[col], CultureInfo.InvariantCulture);
-  //                 localSimilarityMatrix[lowercaseByteValues[row]][uppercaseByteValues[col]] = Convert.ToInt32(rowValues[col], CultureInfo.InvariantCulture);
-
-  //                 // Populate TopLeft area of similarity matrix - Currently for PAMSAM
-  //                 localSimilarityMatrix[row][col] = Convert.ToInt32(rowValues[col], CultureInfo.InvariantCulture);
-  //             }
-  //             catch (FormatException e)
-  //             {
-  //                 string message = String.Format(
-  //                         CultureInfo.CurrentCulture,
-  //                         Properties.Resource.SimilarityMatrix_BadOrMissingValue,
-  //                         line,
-  //                         e.Message);
-  //                 Debug.WriteLine(message);
-  //                 throw new InvalidDataException(message);
-  //             }
-  //         }
-  //     }
-
-  //     this.similarityMatrix = localSimilarityMatrix;
-  // }
 
   /// <summary>
   /// Confirms that there is a symbol in the similarity matrix for every
@@ -376,11 +162,9 @@ export class SimilarityMatrix {
   /// <param name='sequence'>Sequence to validate.</param>
   /// <returns>true if sequence is valid.</returns>
   public validateSequence(sequence: ISequence): boolean {
-    for (let alphabet of this.supportedAlphabets) {
-      for (let letter of Array.from(sequence.sequence)) {
-        if (alphabet.symbols.indexOf(letter) === -1) return false;
-      }
-    }
+    for (let symbol of sequence.symbols)
+      if (this.supportedAlphabets.indexOf(symbol) === -1) return false;
+    return true;
   }
 
 }

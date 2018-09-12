@@ -5,45 +5,45 @@ import { ISequence } from '../sequence/sequence';
 
 
 
-/// <summary>
-/// A simple implementation of IPairwiseSequenceAlignment that stores the 
-/// results as list of Aligned Sequences.
-/// </summary>
+/**
+ * @description A simple implementation of IPairwiseSequenceAlignment that stores the 
+ * results as list of Aligned Sequences.
+ */
 export class PairwiseSequenceAlignment implements IPairwiseSequenceAlignment {
 
-  /// <summary>
-  /// Sequence alignment instance.
-  /// </summary>
+  /**
+   * @description  Sequence alignment instance.
+   */
   readonly seqAlignment: SequenceAlignment;
 
-  /// <summary>
-  /// List of alignments.
-  /// </summary>
+  /**
+   * @description List of alignments.
+   */
   readonly alignedSequences: PairwiseAlignedSequence[];
 
   public get pairwiseAlignedSequences(): PairwiseAlignedSequence[] {
     return this.alignedSequences;
   }
 
-  /// <summary>
-  /// Gets any additional information about the Alignment.
-  /// </summary>
+  /**
+   * @description Gets any additional information about the Alignment.
+   */
   metadata: object;
 
-  /// <summary>
-  /// Gets list of sequences involved in this alignment.
-  /// </summary>
+  /**
+   * @description Gets list of sequences involved in this alignment.
+   */
   public get sequences(): ISequence[] {
     return this.seqAlignment.sequences;
   }
 
 
-  /// <summary>
-  /// Initializes a new instance of the PairwiseSequenceAlignment class
-  /// Constructs PairwiseSequenceAlignment with input sequences.
-  /// </summary>
-  /// <param name="firstSequence">First input sequence.</param>
-  /// <param name="secondSequence">Second input sequence.</param>
+  /**
+   * @description Initializes a new instance of the PairwiseSequenceAlignment class
+   * Constructs PairwiseSequenceAlignment with input sequences.
+   * @param firstSequence First input sequence.
+   * @param secondSequence Second input sequence.
+   */
   constructor(firstSequence: ISequence, secondSequence: ISequence) {
     this.seqAlignment = new SequenceAlignment([firstSequence, secondSequence]);
     this.alignedSequences = [];
@@ -51,65 +51,61 @@ export class PairwiseSequenceAlignment implements IPairwiseSequenceAlignment {
   }
 
 
-
-
-  /// <summary>
-  /// Gets accessor for the first sequence.
-  /// </summary>
+  /**
+   * @description Gets accessor for the first sequence.
+   */
   public get firstSequence(): ISequence {
     if (this.seqAlignment.sequences.length === 0) return null;
     return this.seqAlignment.sequences[0];
   }
 
-  /// <summary>
-  /// Gets accessor for the second sequence.
-  /// </summary>
+  /**
+   * @description Gets accessor for the second sequence.
+   */
   public get secondSequence(): ISequence {
     if (this.seqAlignment.sequences.length <= 1) return null;
     return this.seqAlignment.sequences[1];
   }
 
-  /// <summary>
-  /// Gets or sets a value indicating whether PairwiseSequenceAlignment is read-only or not.
-  /// </summary>
+  /**
+   * @description Gets or sets a value indicating whether PairwiseSequenceAlignment is read-only or not.
+   */
   isReadOnly: boolean;
 
-
-  /// <summary>
-  /// Add a new Aligned Sequence Object to the end of the list.
-  /// </summary>
-  /// <param name="pairwiseAlignedSequence">The sequence to add.</param>
+  /**
+   * @description Add a new Aligned Sequence Object to the end of the list.
+   * @param pairwiseAlignedSequence The sequence to add.
+   */
   addSequence(pairwiseAlignedSequence: PairwiseAlignedSequence) {
     if (this.isReadOnly) throw new Error('Readonly mode');
     this.alignedSequences.push(pairwiseAlignedSequence);
   }
 
-
-  /// <summary>
-  /// Adds an aligned sequence to the list of aligned sequences in the PairwiseSequenceAlignment.
-  /// Throws exception if sequence alignment is read only.
-  /// </summary>
-  /// <param name="item">PairwiseAlignedSequence to add.</param>
+  /**
+   * @description Adds an aligned sequence to the list of aligned sequences in the PairwiseSequenceAlignment.
+   * Throws exception if sequence alignment is read only.
+   * @param item PairwiseAlignedSequence to add.
+   */
   add(item: PairwiseAlignedSequence) {
     if (this.isReadOnly) throw new Error('Readonly mode');
     this.alignedSequences.push(item);
   }
 
-  /// <summary>
-  /// Clears the PairwiseSequenceAlignment
-  /// Throws exception if PairwiseSequenceAlignment is read only.
-  /// </summary>
+  /**
+   * @description Clears the PairwiseSequenceAlignment
+   * Throws an error if PairwiseSequenceAlignment is read only.
+   */
   clear() {
     if (this.isReadOnly) throw new Error('Readonly mode');
     this.alignedSequences.splice(0, this.alignedSequences.length);
   }
 
-  /// <summary>
-  /// Returns true if the PairwiseSequenceAlignment contains the aligned sequence in the
-  /// list of aligned sequences.
-  /// </summary>
-  /// <param name="item">PairwiseAlignedSequence object.</param>
-  /// <returns>True if contains item, otherwise returns false.</returns>
+  /**
+   * @description Returns true if the PairwiseSequenceAlignment contains the aligned sequence in the
+   * list of aligned sequences.
+   * @param item PairwiseAlignedSequence object.
+   * @returns True if contains item, otherwise returns false.
+   */
   contains(item: PairwiseAlignedSequence): boolean {
     return this.alignedSequences.indexOf(item) > -1;
   }
@@ -131,28 +127,27 @@ export class PairwiseSequenceAlignment implements IPairwiseSequenceAlignment {
   //   }
   // }
 
-  /// <summary>
-  /// Removes item from the list of aligned sequences in the PairwiseSequenceAlignment.
-  /// Throws exception if PairwiseSequenceAlignment is read only.
-  /// </summary>
-  /// <param name="item">Aligned sequence object.</param>
-  /// <returns>True if item was removed, false if item was not found.</returns>
+  /**
+   * @description Removes item from the list of aligned sequences in the PairwiseSequenceAlignment.
+   * Throws an error if PairwiseSequenceAlignment is read only.
+   * @param item Aligned sequence object.
+   * @returns True if item was removed, false if item was not found.
+   */
   remove(item: PairwiseAlignedSequence): boolean {
     if (this.isReadOnly) throw new Error('Readonly mode');
     this.alignedSequences.splice(this.alignedSequences.indexOf(item), 1);
     return true;
   }
 
-  /// <summary>
-  /// Converts the Aligned Sequences to string.
-  /// </summary>
-  /// <returns>Aligned Sequence Data.</returns>
+  /**
+   * @description Converts the Aligned Sequences to string.
+   * @returns Aligned Sequence Data.
+   */
   toString(): string {
     let str: string = '';
     for (let seq of this.alignedSequences)
       str += seq.toString();
     return str;
   }
-
 
 }
